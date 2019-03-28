@@ -11,6 +11,7 @@ namespace Lab3
         public string type { get; protected set; }
         public string name { get; set; }
         public abstract void Shoot();
+        public Gun() { }
         public virtual string GetFullType()
         {
             return "Gun";

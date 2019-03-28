@@ -16,14 +16,18 @@ namespace Lab3
         List<Steelarm> steelarms = new List<Steelarm>();
         List<Rifle> rifles = new List<Rifle>();
         List<Pistol> pistols = new List<Pistol>();
-        List<Type> guns = new List<Type>();
+        List<Gun> guns = new List<Gun>();
+        List<Type> gun_types = new List<Type>();
         IEnumerable<Type> subclasses;
         int offset = 20;
         const int margin = 40;
+        int param_number = 0;
         public Form1()
         {
             InitializeComponent();
-            comboBox1.DisplayMember = "Name";
+            comboBox1.Format += (s, e) => {
+                e.Value = ((TypeInfo)e.Value).type.Name;
+            };
             comboBox2.DisplayMember = "Name";
             comboBox2.ValueMember = "Name";
             subclasses = Assembly
@@ -35,13 +39,11 @@ namespace Lab3
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             panel1.Controls.Clear();
+            param_number = 0;
             offset = 20;
-            foreach (PropertyInfo property in (comboBox1.SelectedItem as Type).GetProperties())
+            foreach (ParameterInfo parameter in (comboBox1.SelectedItem as TypeInfo).parameters)
             {
-               if (property.GetMethod.IsPublic && property.SetMethod.IsPublic)
-               {
-                   AddField(TransformPropName(property.Name));
-               }
+                AddField(TransformPropName(parameter.Name));                                
             }
         }
         public string TransformPropName(string prop)
@@ -70,51 +72,18 @@ namespace Lab3
 
         private void button1_Click(object sender, EventArgs e)
         {
-            Type selected_type = (comboBox1.SelectedItem as Type);
-            Gun new_gun = (Gun)Activator.CreateInstance(selected_type);
-            foreach (PropertyInfo property in selected_type.GetProperties())
+            TypeInfo selected_type = (comboBox1.SelectedItem as TypeInfo);
+            List<object> input = new List<object>();
+            TextBox[] textBoxes = panel1.Controls.OfType<TextBox>().ToArray();
+            for (int i=0; i<selected_type.parameters.Count(); i++)
             {
-                if (property.GetMethod.IsPublic && property.SetMethod.IsPublic)
-                {
-                    string TextBox = TransformPropName(property.Name);
-                    TextBox = GetTextBoxName(property.Name);
-                }
+                input.Add(Convert.ChangeType(textBoxes[i].Text, selected_type.parameters[i].ParameterType));
             }
+            Object[] args = input.ToArray();
+            Gun new_gun = (Gun)Activator.CreateInstance(selected_type.type, args);
             comboBox2.Items.Clear();
-            switch (comboBox1.SelectedIndex)
-            {
-                case 0:
-                    {
-                        
-                        steelarms.Add(new Steelarm(panel1.Controls["NameTextBox"].Text));  
-                        break;
-                    }
-                case 1:
-                    {
-                        string name = panel1.Controls["NameTextBox"].Text;
-                        int clip_size = Convert.ToInt16(panel1.Controls["ClipSizeTextBox"].Text);
-                        pistols.Add(new Pistol(name, clip_size));
-                        break;
-                    }
-                case 2:
-                    {
-                        string name = panel1.Controls["NameTextBox"].Text;
-                        int clip_size = Convert.ToInt16(panel1.Controls["ClipSizeTextBox"].Text);
-                        int fire_rate = Convert.ToInt16(panel1.Controls["FireRateTextBox"].Text);
-                        rifles.Add(new Rifle(name, clip_size, fire_rate));
-                        break;
-                    }
-            }
-            
-            foreach (Steelarm gun in steelarms)
-            {
-                comboBox2.Items.Add(gun);
-            }
-            foreach (Pistol gun in pistols)
-            {
-                comboBox2.Items.Add(gun);
-            }
-            foreach (Rifle gun in rifles)
+            guns.Add(new_gun);
+            foreach (Gun gun in guns)
             {
                 comboBox2.Items.Add(gun);
             }
@@ -190,13 +159,31 @@ namespace Lab3
             }
             UpdateInfo();
         }
+        public class TypeInfo
+        {
+            public Type type;
+            public ParameterInfo[] parameters;
+            public TypeInfo() { }
+        }
         public void FillTypeComboBox()
         {
             foreach (Type type in subclasses)
             {
                 if (!type.IsAbstract)
                 {
-                    comboBox1.Items.Add(type);
+                    TypeInfo new_type = new TypeInfo();
+                    new_type.type = type;
+                    ConstructorInfo[] constructors = type.GetConstructors();
+                    foreach (ConstructorInfo constructor in constructors)
+                    {
+                        ParameterInfo[] parameters = constructor.GetParameters();
+                        if (parameters.Count() > 0)
+                        {
+                            new_type.parameters = parameters;
+                            break;
+                        }
+                    }
+                    comboBox1.Items.Add(new_type);
                 }
             }
             comboBox1.SelectedIndex = 0;

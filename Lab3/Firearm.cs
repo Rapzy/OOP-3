@@ -10,7 +10,7 @@ namespace Lab3
     {
         public int clip_size { get; set; }
         public int ammo { get; protected set; }
-        public Firearm(string name, int clip_size)
+        public Firearm(string name="", int clip_size=0)
         {
             this.name = name;
             this.clip_size = clip_size;

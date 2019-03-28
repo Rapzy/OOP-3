@@ -8,10 +8,8 @@ namespace Lab3
 {
     public class Pistol : Firearm
     {
-        public Pistol(string name, int clip_size):base(name,clip_size)
+        public Pistol(string name="", int clip_size=0):base(name,clip_size)
         {
-            this.name = name;
-            this.clip_size = clip_size;
             ammo = clip_size;
             type = "Pistol";
         }
