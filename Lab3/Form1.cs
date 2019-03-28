@@ -13,9 +13,6 @@ namespace Lab3
 {
     public partial class Form1 : Form
     {
-        List<Steelarm> steelarms = new List<Steelarm>();
-        List<Rifle> rifles = new List<Rifle>();
-        List<Pistol> pistols = new List<Pistol>();
         List<Gun> guns = new List<Gun>();
         List<Type> gun_types = new List<Type>();
         IEnumerable<Type> subclasses;
@@ -96,11 +93,18 @@ namespace Lab3
         }
         private void button4_Click(object sender, EventArgs e)
         {
-
+            Type t = Type.GetType(comboBox2.SelectedItem.ToString());
+            object selected_gun = Convert.ChangeType(comboBox2.SelectedItem, t);
+            foreach(PropertyInfo property in t.GetProperties())
+            {
+                string txt = panel2.Controls[GetTextBoxName(TransformPropName(property.Name), 2)].Text;
+                property.SetValue(selected_gun, Convert.ChangeType(txt ,property.PropertyType));
+            }
+            UpdateInfo();
         }
         public void UpdateInfo()
         {
-            Gun obj = (Gun)comboBox2.SelectedItem;
+            dynamic obj = comboBox2.SelectedItem;
             panel2.Controls.Clear();
             offset = 20;
             Type t = Type.GetType(comboBox2.SelectedItem.ToString());
