@@ -13,7 +13,7 @@ namespace Lab3
             this.name = name;
             this.clip_size = clip_size;
             ammo = clip_size;
-            type = "Pistol ";
+            type = "Pistol";
         }
     }
 }

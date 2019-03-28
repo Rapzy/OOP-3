@@ -14,13 +14,5 @@ namespace Lab3
             type = "Rifle ";
             this.fire_rate = fire_rate;
         }
-        public override void Print_Info()
-        {
-            Console.WriteLine("Gun: {0}", name);
-            Console.WriteLine("Type: {0}", type);
-            Console.WriteLine("Fire rate: {0}", fire_rate);
-            Console.WriteLine("Clip: {0}/{1}", ammo, clip_size);
-            Console.WriteLine("=======================");
-        }
     }
 }

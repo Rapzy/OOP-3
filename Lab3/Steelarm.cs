@@ -10,6 +10,7 @@ namespace Lab3
     {
         public Steelarm(string name)
         {
+
             this.name = name;
             type = "Steel arm ";
         }

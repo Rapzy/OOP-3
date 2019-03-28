@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Lab3
 {
-    public class Firearm : Gun
+    public abstract class Firearm : Gun
     {
         public int clip_size { get; set; }
         public int ammo { get; protected set; }
@@ -21,28 +21,12 @@ namespace Lab3
         {
             if (ammo > 0)
             {
-                Console.WriteLine("Pew");
-                Console.WriteLine("=======================");
                 ammo -= 1;
-            }
-            else
-            {
-                Console.WriteLine("No ammo");
-                Console.WriteLine("=======================");
             }
         }
         public void Reload()
         {
             ammo = clip_size;
-            Console.WriteLine("{0} reloaded!", name);
-            Console.WriteLine("=======================");
-        }
-        public override void Print_Info()
-        {
-            Console.WriteLine("Gun: {0}", name);
-            Console.WriteLine("Type: {0}", type);
-            Console.WriteLine("Clip: {0}/{1}", ammo, clip_size);
-            Console.WriteLine("=======================");
         }
         public override string GetFullType()
         {

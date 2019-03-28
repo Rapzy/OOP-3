@@ -15,16 +15,5 @@ namespace Lab3
         {
             return "Gun";
         }
-        public virtual void Print_Info()
-        {
-            Console.WriteLine("Gun: {0}", name);
-            Console.WriteLine("Type: {0}", type);
-            Console.WriteLine("=======================");
-        }
-        public virtual void PrintHierarchy()
-        {
-            Console.WriteLine(GetFullType());
-            Console.WriteLine("=======================");
-        }
     }
 }

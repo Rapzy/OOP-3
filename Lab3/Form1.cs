@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Reflection;
 
 namespace Lab3
 {
@@ -15,47 +16,46 @@ namespace Lab3
         List<Steelarm> steelarms = new List<Steelarm>();
         List<Rifle> rifles = new List<Rifle>();
         List<Pistol> pistols = new List<Pistol>();
+        List<Type> guns = new List<Type>();
+        IEnumerable<Type> subclasses;
+        int offset = 20;
+        const int margin = 40;
         public Form1()
         {
             InitializeComponent();
-            comboBox1.SelectedIndex = 0;
+            comboBox1.DisplayMember = "Name";
             comboBox2.DisplayMember = "Name";
             comboBox2.ValueMember = "Name";
+            subclasses = Assembly
+           .GetAssembly(typeof(Gun))
+           .GetTypes()
+           .Where(t => t.IsSubclassOf(typeof(Gun)));
+            FillTypeComboBox();
         }
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            int offset = 0;
-            int margin = 40;
-
-            switch (comboBox1.SelectedIndex)
+            panel1.Controls.Clear();
+            offset = 20;
+            foreach (PropertyInfo property in (comboBox1.SelectedItem as Type).GetProperties())
             {
-                case 0:
-                    {
-                        panel1.Controls.Clear();
-                        AddField("Name", offset += margin);
-                        break;
-                    }
-                case 1:
-                    {
-                        panel1.Controls.Clear();
-                        AddField("Name", offset += margin);
-                        AddField("Clip Size", offset += margin);
-                        break;
-                    }
-                case 2:
-                    {
-                        panel1.Controls.Clear();
-                        AddField("Name", offset += margin);
-                        AddField("Clip Size", offset += margin);
-                        AddField("Fire Rate", offset += margin);
-                        break;
-                    }
+               if (property.GetMethod.IsPublic && property.SetMethod.IsPublic)
+               {
+                   AddField(TransformPropName(property.Name));
+               }
             }
         }
-        public void AddField(string name, int offset)
+        public string TransformPropName(string prop)
+        {
+            return prop.First().ToString().ToUpper()+prop.Substring(1).Replace("_", " ");
+        }
+        public string GetTextBoxName(string prop_name, int id = 0)
+        {
+            return prop_name.Replace(" ", "") + "TextBox" + id.ToString();
+        }
+        public void AddField(string name)
         {
             TextBox txt = new TextBox();
-            txt.Name = name.Replace(" ","")+"TextBox";
+            txt.Name = GetTextBoxName(name, 1);
             txt.Height = 15;
             txt.Width = 150;
             txt.Top = offset;
@@ -65,15 +65,27 @@ namespace Lab3
             lbl.Text = name;
             lbl.Top = offset - 15;
             panel1.Controls.Add(lbl);
+            offset += margin;
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
+            Type selected_type = (comboBox1.SelectedItem as Type);
+            Gun new_gun = (Gun)Activator.CreateInstance(selected_type);
+            foreach (PropertyInfo property in selected_type.GetProperties())
+            {
+                if (property.GetMethod.IsPublic && property.SetMethod.IsPublic)
+                {
+                    string TextBox = TransformPropName(property.Name);
+                    TextBox = GetTextBoxName(property.Name);
+                }
+            }
             comboBox2.Items.Clear();
             switch (comboBox1.SelectedIndex)
             {
                 case 0:
                     {
+                        
                         steelarms.Add(new Steelarm(panel1.Controls["NameTextBox"].Text));  
                         break;
                     }
@@ -177,6 +189,17 @@ namespace Lab3
                 (selected as Firearm).Reload();
             }
             UpdateInfo();
+        }
+        public void FillTypeComboBox()
+        {
+            foreach (Type type in subclasses)
+            {
+                if (!type.IsAbstract)
+                {
+                    comboBox1.Items.Add(type);
+                }
+            }
+            comboBox1.SelectedIndex = 0;
         }
     }
 }
