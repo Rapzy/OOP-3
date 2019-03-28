@@ -21,7 +21,6 @@ namespace Lab3
         IEnumerable<Type> subclasses;
         int offset = 20;
         const int margin = 40;
-        int param_number = 0;
         public Form1()
         {
             InitializeComponent();
@@ -29,7 +28,6 @@ namespace Lab3
                 e.Value = ((TypeInfo)e.Value).type.Name;
             };
             comboBox2.DisplayMember = "Name";
-            comboBox2.ValueMember = "Name";
             subclasses = Assembly
            .GetAssembly(typeof(Gun))
            .GetTypes()
@@ -39,35 +37,15 @@ namespace Lab3
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             panel1.Controls.Clear();
-            param_number = 0;
             offset = 20;
             foreach (ParameterInfo parameter in (comboBox1.SelectedItem as TypeInfo).parameters)
             {
-                AddField(TransformPropName(parameter.Name));                                
+                AddField(parameter, panel1, 1);                                
             }
         }
-        public string TransformPropName(string prop)
+        private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
         {
-            return prop.First().ToString().ToUpper()+prop.Substring(1).Replace("_", " ");
-        }
-        public string GetTextBoxName(string prop_name, int id = 0)
-        {
-            return prop_name.Replace(" ", "") + "TextBox" + id.ToString();
-        }
-        public void AddField(string name)
-        {
-            TextBox txt = new TextBox();
-            txt.Name = GetTextBoxName(name, 1);
-            txt.Height = 15;
-            txt.Width = 150;
-            txt.Top = offset;
-            panel1.Controls.Add(txt);
-
-            Label lbl = new Label();
-            lbl.Text = name;
-            lbl.Top = offset - 15;
-            panel1.Controls.Add(lbl);
-            offset += margin;
+            UpdateInfo();
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -100,70 +78,85 @@ namespace Lab3
 
         private void button2_Click(object sender, EventArgs e)
         {
-            object selected = comboBox2.SelectedItem;
-            GetGunType(selected).Shoot();
-            UpdateInfo();
-        }
-        public Gun GetGunType(object obj)
-        {
-            if (obj is Steelarm)
-            {
-                return (Steelarm)obj;
-            }
-            else if (obj is Pistol)
-            {
-                return (Pistol)obj;
-            }
-            else if (obj is Rifle)
-            {
-                return (Rifle)obj;
-            }
-            return (Firearm)obj;
-        }
-        public void UpdateInfo()
-        {
-            foreach (Label obj in panel2.Controls)
-            {
-                obj.Text = obj.Text.Substring(0, obj.Text.IndexOf(": ") + 2);
-            }
-            InfoAmmo.Visible = false;
-            InfoRate.Visible = false;
-            Gun selected = GetGunType(comboBox2.SelectedItem);
-            InfoName.Text += selected.name;
-            InfoType.Text += selected.type;
-            InfoDiscription.Text += selected.GetFullType();
-            if (selected is Firearm)
-            {
-                InfoAmmo.Text += (selected as Firearm).ammo.ToString()+"/"+ (selected as Firearm).clip_size;
-                InfoAmmo.Visible = true;
-            }
-            if (selected is Rifle)
-            { 
-                InfoRate.Text += (selected as Rifle).fire_rate.ToString();
-                InfoAmmo.Visible = true;
-                InfoRate.Visible = true;
-            }
-        }
-
-        private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
-        {
+            Type t = Type.GetType(comboBox2.SelectedItem.ToString());
+            dynamic selected_gun = Convert.ChangeType(comboBox2.SelectedItem, t);
+            selected_gun.Shoot();
             UpdateInfo();
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-            Gun selected = GetGunType(comboBox2.SelectedItem);
-            if (selected is Firearm)
+            Type t = Type.GetType(comboBox2.SelectedItem.ToString());
+            if (t.GetMethod("Reload") != null)
             {
-                (selected as Firearm).Reload();
+                dynamic selected_gun = Convert.ChangeType(comboBox2.SelectedItem, t);
+                selected_gun.Reload();
+                UpdateInfo();
             }
-            UpdateInfo();
+        }
+        private void button4_Click(object sender, EventArgs e)
+        {
+
+        }
+        public void UpdateInfo()
+        {
+            Gun obj = (Gun)comboBox2.SelectedItem;
+            panel2.Controls.Clear();
+            offset = 20;
+            Type t = Type.GetType(comboBox2.SelectedItem.ToString());
+            PropertyInfo[] properties = obj.GetType().GetProperties();
+            foreach (PropertyInfo property in properties)
+            {
+                AddField(property, panel2, 2, property.GetValue(obj).ToString());
+            }
         }
         public class TypeInfo
         {
             public Type type;
             public ParameterInfo[] parameters;
             public TypeInfo() { }
+        }
+        public void AddField(ParameterInfo parameter, Panel parent, int id)
+        {
+            string name = TransformPropName(parameter.Name);
+            TextBox txt = new TextBox();
+            txt.Name = GetTextBoxName(name, id);
+            txt.Height = 15;
+            txt.Width = 150;
+            txt.Top = offset;
+            parent.Controls.Add(txt);
+
+            Label lbl = new Label();
+            lbl.Text = name;
+            lbl.Top = offset - 15;
+            parent.Controls.Add(lbl);
+            offset += margin;
+        }
+        public void AddField(PropertyInfo property, Panel parent, int id, string value)
+        {
+            string name = TransformPropName(property.Name);
+            TextBox txt = new TextBox();
+            txt.Name = GetTextBoxName(name, id);
+            txt.Height = 15;
+            txt.Width = 150;
+            txt.Top = offset;
+            txt.Text = value;
+            txt.Enabled = property.SetMethod.IsPublic;
+            parent.Controls.Add(txt);
+
+            Label lbl = new Label();
+            lbl.Text = name;
+            lbl.Top = offset - 15;
+            parent.Controls.Add(lbl);
+            offset += margin;
+        }
+        public string TransformPropName(string prop)
+        {
+            return prop.First().ToString().ToUpper() + prop.Substring(1).Replace("_", " ");
+        }
+        public string GetTextBoxName(string prop_name, int id = 0)
+        {
+            return prop_name.Replace(" ", "") + "TextBox" + id.ToString();
         }
         public void FillTypeComboBox()
         {
