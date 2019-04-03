@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Lab3
 {
+    [Serializable]
     public class Steelarm:Gun
     {
         public Steelarm(string name)

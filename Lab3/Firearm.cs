@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Lab3
 {
+    [Serializable]
     public abstract class Firearm : Gun
     {
         public int clip_size { get; set; }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Lab3
 {
+    [Serializable]
     public class Pistol : Firearm
     {
         public Pistol(string name="", int clip_size=0):base(name,clip_size)

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Lab3
 {
+    [Serializable]
     public abstract class Gun
     {
         public string type { get; protected set; }

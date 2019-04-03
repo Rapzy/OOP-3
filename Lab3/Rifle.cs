@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Lab3
 {
+    [Serializable]
     public class Rifle:Firearm
     {
         public int fire_rate { get; set; }
