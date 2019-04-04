@@ -105,11 +105,7 @@ namespace Lab3
         private void button5_Click(object sender, EventArgs e)
         {
             int idx = serialization_list.IndexOf(selected_gun.obj); //index of object in @serialization_list
-            if (idx != -1) //check if object already in @serialization_list
-            {
-                serialization_list[idx] = selected_gun.obj; //update object
-            }
-            else
+            if (idx == -1) //check if object already in @serialization_list
             {
                 serialization_list.Add(selected_gun.obj);
                 textBox1.Text += selected_gun.type.GetProperty("name").GetValue(selected_gun.obj) + Environment.NewLine;
@@ -120,17 +116,19 @@ namespace Lab3
             BinaryFormatter formatter = new BinaryFormatter();
             FileStream fs = new FileStream("Guns.dat", FileMode.OpenOrCreate);
             formatter.Serialize(fs, serialization_list.ToArray());
+            fs.Close();
         }
         private void button7_Click(object sender, EventArgs e)
         {
             BinaryFormatter formatter = new BinaryFormatter();
             FileStream fs = new FileStream("Guns.dat", FileMode.Open);
             Gun[] loaded_guns = (Gun[])formatter.Deserialize(fs);
-            foreach(Gun gun in loaded_guns)
+            foreach (Gun loaded_gun in loaded_guns)
             {
-                guns.Add(gun);
+                guns.Add(loaded_gun);
             }
             UpdateGunList();
+            fs.Close();
         }
         public void UpdateInfo()
         {
